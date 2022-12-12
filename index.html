@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+  <script src="js/barChart.js" async></script>
+  <script src="js/donutChart.js" async></script>
+  <script src="js/cluster.js" async></script>
+  <script src="js/script.js" async></script>
+  <script src="./data/data.js">
+  </script>
+
+  <title>D3 - Group Project</title>
+</head>
+
+<body>
+  <header id="header">
+    <h1>FIFA data visualization with d3.js</h1>
+  </header>
+  <div class="container">
+    <div id="bar-chart" class="view">
+      <h2 class="">Bar Chart on Scores</h2>
+      <div id="plot-selector">
+        <label>Plot:</label>
+        <select id="dataset" onchange="chooseData()">
+          <option selected value="overall">Overalls</option>
+          <option value="shooting">Shooting</option>
+          <option value="passing">Passing</option>
+          <option value="dribbling">Dribbling</option>
+        </select>
+      </div>
+      <svg width="500" height="400" id="barChart">
+        <g id="xAxis"></g>
+        <g id="yAxis"></g>
+        <g id="bars"></g>
+      </svg>
+    </div>
+    <hr />
+    <div id="donut-chart" class="view">
+      <h2 class="">Donut Chart of 10 random players on Wages</h2>
+      <div id="donutChart"></div>
+    </div>
+    <hr />
+    <div id="pie-chart" class="view">
+      <h2 class="">Pie Chart of Top 10 players on</h2>
+      <!-- Add 2 buttons -->
+      <button onclick="update(power_long_shots)">Long Shots</button>
+      <button onclick="update(power_stamina)">Stamina</button>
+      <div id="pieChart"></div>
+    </div>
+    <hr />
+    <div id="players-chart" class="view">
+      <h2 class="">Top 100 Player cards</h2>
+      <div id="players"></div>
+    </div>
+    <hr />
+    <div id="word-cloud-container" class="view">
+      <h2 class="">Word Cloud of different nationalities</h2>
+      <div id="word-cloud"></div>
+    </div>
+    <hr />
+    <div id="line-chart-container" class="view">
+      <h2 class="">Line Chart for player's age</h2>
+      <div id="line-chart"></div>
+    </div>
+    <hr />
+    <div id="cluster-container" class="view">
+      <h2 class="">Cluster for clubs</h2>
+      <div id="cluster-div">
+        <svg id="cluster" width="700" height="1500"></svg>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <h2>Web Content Management Systems</h2>
+    <h4>
+      Group 3
+    </h4>
+    <nav class="copyright">
+      <li>
+        Aakash Pal
+      </li>
+      <li>
+        Aanchal Chawla
+      </li>
+      <li>
+        Gaurav Chaudhary
+      </li>
+      <li>
+        Vikas Pal
+      </li>
+    </nav>
+  </footer>
+  <script>
+    //#region Pie Chart
+    // set the dimensions and margins of the graph
+    var width = 650
+    height = 650
+    margin = 40
+
+    // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
+    var radius = Math.min(width, height) / 2 - margin
+
+    var svg = d3.select("#pieChart")
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height)
+      .append("g")
+      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    // create 2 data_set
+    var power_long_shots = {
+      "L. Messi": 94,
+      "Cristiano Ronaldo": 93,
+      "Neymar Jr": 84,
+      "J. Oblak": 12,
+      "E. Hazard": 80,
+      "K. De Bruyne": 90,
+      "M. ter Stegen": 10,
+      "V. van Dijk": 64,
+      "L. Modrić": 82,
+      "M. Salah": 84
+    }
+    var power_stamina = {
+      "L. Messi": 75,
+      "Cristiano Ronaldo": 85,
+      "Neymar Jr": 81,
+      "J. Oblak": 41,
+      "E. Hazard": 84,
+      "K. De Bruyne": 89,
+      "M. ter Stegen": 35,
+      "V. van Dijk": 75,
+      "L. Modrić": 85,
+      "M. Salah": 85
+    }
+
+    // set the color scale
+    var color = d3.scaleOrdinal()
+      .domain(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
+      .range(d3.schemeDark2);
+
+    // A function that create / update the plot for a given variable:
+    function update(data) {
+
+      // Compute the position of each group on the pie:
+      var pie = d3.pie()
+        .value(function(d) {
+          return d.value;
+        })
+        .sort((a, b) => d3.ascending(a.key, b.key)) // This make sure that group order remains the same in the pie chart
+      var data_ready = pie(d3.entries(data))
+
+      // map to data
+      var u = svg.selectAll("path")
+        .data(data_ready)
+
+      var arcGenerator = d3.arc()
+        .innerRadius(0)
+        .outerRadius(radius)
+
+      // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
+      u
+        .enter()
+        .append('path')
+        .merge(u)
+        .transition()
+        .duration(1000)
+        .attr('d', arcGenerator)
+        .attr('fill', function(d) {
+          return (color(d.data.key))
+        })
+        .attr("stroke", "white")
+        .style("stroke-width", "2px")
+        .style("opacity", 1)
+
+      u
+        .enter()
+        .append('text')
+        .text(function(d) {
+          return d.data.key
+        })
+        .attr("transform", function(d) {
+          let [x, y] = arcGenerator.centroid(d)
+          return "translate(" + [x - 1, y + 5] + ") rotate(10)";
+        })
+        .style("text-anchor", "middle")
+        .style("font-size", 13)
+      // remove the group that is not present anymore
+      u
+        .exit()
+        .remove()
+
+    }
+
+    // Initialize the plot with the first dataset
+    update(power_long_shots)
+    //#endregion
+
+    //#region Players Chart
+    // Start by creating the svg area
+    data.slice(0, 98).forEach(player => {
+      let playerChart = d3.select("#players")
+        .append("svg")
+        .attr("width", 50)
+        .attr("height", 50)
+
+      // Append a circle
+      playerChart.append("circle")
+        .attr("id", `circle_${player.sofifa_id}`)
+        .attr("cx", 25)
+        .attr("cy", 25)
+        .attr("r", 10)
+        .attr("fill", "#69b3a2")
+
+
+      let x = player.sofifa_id.toString().substring(0, 3);
+      let y = player.sofifa_id.toString().substring(3);
+      // create a tooltip
+      let playerChartTooltip1 = d3.select("#players")
+        .append("div")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background-color", "#846e0b")
+        .style("color", "white")
+        .style("border", "solid")
+        .style("border-width", "1px")
+        .style("border-radius", "5px")
+        .style("padding", "10px")
+        .html(`<div>
+          <div style="display: flex;">
+            <div>
+              <h1>${player.overall}</h1>
+              <p>${player.team_position}</p>
+            </div>
+            <div style="margin: 20px;">
+              <img src='https://cdn.sofifa.net/players/${x}/${y}/20_120.png'></img><br>
+            </div>
+          </div>
+          <h1 style="text-align: center;">${player.short_name}</h1>
+          <hr />
+          <div style="display: flex;margin: 0 auto;">
+            <div style="margin: 20px;">
+              <p>${player.pace || 0} PAC</p>
+              <p>${player.shooting || 0} SHO</p>
+              <p>${player.passing || 0} PAS</p>
+            </div>
+            <div style="margin: 20px;border-left:1px solid white;height:100px"></div>
+            <div style="margin: 20px;">
+              <p>${player.dribbling || 0} DRI</p>
+              <p>${player.defending || 0} DEF</p>
+              <p>${player.physic || 0} PHY</p>
+            </div>
+          </div>
+        </div>`)
+      //   .html(`<img src='https://cdn.sofifa.net/players/${x}/${y}/20_120.png'></img><br>
+      // <p>${player.long_name}</p>Fancy<br><span style='font-size: 40px;'>Overall: ${player.overall}</span>`);
+
+
+      d3.select(`#circle_${player.sofifa_id}`)
+        .on("mouseover", function() {
+          return playerChartTooltip1.style("visibility", "visible");
+        })
+        .on("mousemove", function() {
+          return playerChartTooltip1.style("top", (event.pageY - 300) + "px").style("left", (event.pageX + 100) + "px");
+        })
+        .on("mouseout", function() {
+          return playerChartTooltip1.style("visibility", "hidden");
+        });
+    });
+
+
+    //#endregion
+
+    //#region Word Cloud
+    // List of words
+    var myWords = ['Argentina', 'Portugal', 'Brazil', 'Slovenia', 'Belgium', 'Germany', 'Netherlands', 'Croatia', 'Egypt', 'France', 'Senegal', 'England', 'Spain', 'Italy', 'Uruguay', 'Poland', 'Denmark', 'Gabon', 'Korea Republic', 'Costa Rica', 'Slovakia', 'Bosnia Herzegovina', 'Serbia', 'Scotland', 'Hungary', 'Switzerland', 'Greece', 'Austria', 'Morocco', 'Sweden', 'Wales', 'Colombia', 'Czech Republic', 'Chile', 'Algeria', 'Ivory Coast', 'Togo', 'Norway', 'Mexico', 'Iceland', 'Finland', 'Jamaica', 'Albania', 'Guinea', 'Cameroon', 'Ghana', 'Montenegro', 'Ukraine', 'Russia', 'DR Congo', 'Central African Rep.', 'Venezuela', 'Nigeria', 'Armenia', 'Israel', 'Ecuador', 'Paraguay', 'Australia', 'Turkey', 'Romania', 'Japan', 'Mali', 'United States', 'Kosovo', 'Dominican Republic', 'Tanzania', 'China PR', 'Northern Ireland', 'Republic of Ireland', 'Tunisia', 'Cape Verde', 'FYR Macedonia', 'Burkina Faso', 'Kenya', 'Angola', 'South Africa', 'Peru', 'Syria', 'Gambia', 'New Zealand', 'Equatorial Guinea', 'Zimbabwe', 'Georgia', 'Canada', 'Estonia', 'Benin', 'Bulgaria', 'Mozambique', 'Honduras', 'Guinea Bissau', 'Iran', 'Philippines', 'Cyprus', 'Madagascar', 'Uzbekistan', 'Moldova', 'Cuba', 'Sierra Leone', 'Curacao', 'Zambia', 'Congo', 'Bolivia', 'Comoros', 'Iraq', 'Chad', 'Lithuania', 'Saudi Arabia', 'Panama', 'Libya', 'Bahrain', 'St Kitts Nevis', 'New Caledonia', 'Luxembourg', 'Trinidad & Tobago', 'Thailand', 'United Arab Emirates', 'Eritrea', 'Korea DPR', 'El Salvador', 'Azerbaijan', 'Latvia', 'Montserrat', 'Puerto Rico', 'Bermuda', 'São Tomé & Príncipe', 'Antigua & Barbuda', 'Burundi', 'Kazakhstan', 'Liberia', 'Guyana', 'Haiti', 'Jordan', 'Faroe Islands', 'Mauritania', 'Namibia', 'Rwanda', 'Uganda', 'Hong Kong', 'Chinese Taipei', 'Belize', 'Palestine', 'Mauritius', 'Guam', 'Suriname', 'Lebanon', 'Guatemala', 'Sudan', 'Liechtenstein', 'Grenada', 'St Lucia', 'Afghanistan', 'Ethiopia', 'Barbados', 'India', 'Malta', 'Niger', 'Vietnam', 'Malawi', 'Gibraltar', 'Macau', 'South Sudan', 'Indonesia', ]
+
+    // set the dimensions and margins of the graph
+    var margin = {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
+      },
+      width = 500 - margin.left - margin.right,
+      height = 500 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var wordCloudSvg = d3.select("#word-cloud").append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+    // Constructs a new cloud layout instance. It run an algorithm to find the position of words that suits your requirements
+    // Wordcloud features that are different from one word to the other must be here
+    var layout = d3.layout.cloud()
+      .size([width, height])
+      .words(myWords.map(function(d) {
+        return {
+          text: d
+        };
+      }))
+      .padding(5) //space between words
+      .rotate(-45) // rotation angle in degrees
+      .fontSize(20) // font size of words
+      .on("end", draw);
+    layout.start();
+
+    // This function takes the output of 'layout' above and draw the words
+    // Wordcloud features that are THE SAME from one word to the other can be here
+    function draw(words) {
+      wordCloudSvg
+        .append("g")
+        .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+        .selectAll("text")
+        .data(words)
+        .enter().append("text")
+        .style("font-size", 20)
+        .style("fill", "#69b3a2")
+        .attr("text-anchor", "middle")
+        .style("font-family", "Impact")
+        .attr("transform", function(d) {
+          return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+        })
+        .text(function(d) {
+          return d.text;
+        });
+    }
+    //#endregion
+
+    //#region Line Chart
+    // set the dimensions and margins of the graph
+    var margin = {
+        top: 10,
+        right: 30,
+        bottom: 30,
+        left: 60
+      },
+      width = 660 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+
+    // append the svg object to the body of the page
+    var lineChartSvg = d3.select("#line-chart")
+      .append("svg")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+    //Read the data
+    d3.csv("data/lineChart.csv", function(data) {
+
+      // Add X axis --> it is a date format
+      var x = d3.scaleLinear()
+        .domain([10, 42])
+        .range([0, width]);
+      lineChartSvg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+      // Add Y axis
+      var y = d3.scaleLinear()
+        .domain([1, 1500])
+        .range([height, 0]);
+      lineChartSvg.append("g")
+        .call(d3.axisLeft(y));
+
+      // This allows to find the closest X index of the mouse:
+      var bisect = d3.bisector(function(d) {
+        return d.x;
+      }).left;
+
+      // Create the circle that travels along the curve of chart
+      var focus = lineChartSvg
+        .append('g')
+        .append('circle')
+        .style("fill", "none")
+        .attr("stroke", "black")
+        .attr('r', 8.5)
+        .style("opacity", 0)
+
+      // Create the text that travels along the curve of chart
+      var focusText = lineChartSvg
+        .append('g')
+        .append('text')
+        .style("opacity", 0)
+        .attr("text-anchor", "left")
+        .attr("alignment-baseline", "middle")
+
+      // Add the line
+      lineChartSvg
+        .append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+          .x(function(d) {
+            return x(d.x)
+          })
+          .y(function(d) {
+            return y(d.y)
+          })
+        )
+
+      // Create a rect on top of the lineChartSvg area: this rectangle recovers mouse position
+      lineChartSvg
+        .append('rect')
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .attr('width', width)
+        .attr('height', height)
+        .on('mouseover', mouseover)
+        .on('mousemove', mousemove)
+        .on('mouseout', mouseout);
+
+
+      // What happens when the mouse move -> show the annotations at the right positions.
+      function mouseover() {
+        focus.style("opacity", 1)
+        focusText.style("opacity", 1)
+      }
+
+      function mousemove() {
+        // recover coordinate we need
+        var x0 = x.invert(d3.mouse(this)[0]);
+        var i = bisect(data, x0, 1);
+        selectedData = data[i]
+        focus
+          .attr("cx", x(selectedData.x))
+          .attr("cy", y(selectedData.y))
+        focusText
+          .html("Total players of " + selectedData.x + " age are " + selectedData.y)
+          .attr("x", x(selectedData.x) + 15)
+          .attr("y", y(selectedData.y))
+      }
+
+      function mouseout() {
+        focus.style("opacity", 0)
+        focusText.style("opacity", 0)
+      }
+
+    })
+    //#endregion
+
+    //#region sticky header
+    window.onscroll = function() {
+      stickyHeader()
+    };
+
+    var header = document.getElementById("header");
+    var sticky = header.offsetTop;
+
+    function stickyHeader() {
+      if (window.pageYOffset > sticky) {
+        header.classList.add("sticky");
+      } else {
+        header.classList.remove("sticky");
+      }
+    }
+    //#endregion
+  </script>
+</body>
+
+</html>
