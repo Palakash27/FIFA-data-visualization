@@ -41,12 +41,16 @@
         <g id="bars"></g>
       </svg>
     </div>
+
     <hr />
+
     <div id="donut-chart" class="view">
       <h2 class="">Donut Chart of 10 random players on Wages</h2>
       <div id="donutChart"></div>
     </div>
+
     <hr />
+
     <div id="pie-chart" class="view">
       <h2 class="">Pie Chart of Top 10 players on</h2>
       <!-- Add 2 buttons -->
@@ -54,22 +58,30 @@
       <button onclick="update(power_stamina)">Stamina</button>
       <div id="pieChart"></div>
     </div>
+
     <hr />
+
     <div id="players-chart" class="view">
       <h2 class="">Top 100 Player cards</h2>
       <div id="players"></div>
     </div>
+
     <hr />
+
     <div id="word-cloud-container" class="view">
       <h2 class="">Word Cloud of different nationalities</h2>
       <div id="word-cloud"></div>
     </div>
+
     <hr />
+
     <div id="line-chart-container" class="view">
       <h2 class="">Line Chart for player's age</h2>
       <div id="line-chart"></div>
     </div>
+
     <hr />
+
     <div id="cluster-container" class="view">
       <h2 class="">Cluster for clubs</h2>
       <div id="cluster-div">
@@ -100,12 +112,11 @@
   </footer>
   <script>
     //#region Pie Chart
-    // set the dimensions and margins of the graph
+    // set the dimensions and margins of the chart
     var width = 650
     height = 650
     margin = 40
 
-    // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
     var radius = Math.min(width, height) / 2 - margin
 
     var svg = d3.select("#pieChart")
@@ -165,7 +176,7 @@
         .innerRadius(0)
         .outerRadius(radius)
 
-      // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
+
       u
         .enter()
         .append('path')
@@ -192,7 +203,6 @@
         })
         .style("text-anchor", "middle")
         .style("font-size", 13)
-      // remove the group that is not present anymore
       u
         .exit()
         .remove()
@@ -259,9 +269,6 @@
             </div>
           </div>
         </div>`)
-      //   .html(`<img src='https://cdn.sofifa.net/players/${x}/${y}/20_120.png'></img><br>
-      // <p>${player.long_name}</p>Fancy<br><span style='font-size: 40px;'>Overall: ${player.overall}</span>`);
-
 
       d3.select(`#circle_${player.sofifa_id}`)
         .on("mouseover", function() {
@@ -300,8 +307,6 @@
       .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
 
-    // Constructs a new cloud layout instance. It run an algorithm to find the position of words that suits your requirements
-    // Wordcloud features that are different from one word to the other must be here
     var layout = d3.layout.cloud()
       .size([width, height])
       .words(myWords.map(function(d) {
@@ -342,7 +347,7 @@
     var margin = {
         top: 10,
         right: 30,
-        bottom: 30,
+        bottom: 40,
         left: 60
       },
       width = 660 - margin.left - margin.right,
@@ -360,7 +365,7 @@
     //Read the data
     d3.csv("data/lineChart.csv", function(data) {
 
-      // Add X axis --> it is a date format
+      // Add X axis
       var x = d3.scaleLinear()
         .domain([10, 42])
         .range([0, width]);
@@ -374,6 +379,22 @@
         .range([height, 0]);
       lineChartSvg.append("g")
         .call(d3.axisLeft(y));
+
+      // Add X axis label:
+      lineChartSvg.append("text")
+        .attr("text-anchor", "end")
+        .attr("x", width - 100)
+        .attr("y", height + margin.top + 20)
+        .style("margin-bottom", "12px")
+        .text("Age");
+
+      // Y axis label:
+      lineChartSvg.append("text")
+        .attr("text-anchor", "end")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -margin.top - 50)
+        .text("Count")
 
       // This allows to find the closest X index of the mouse:
       var bisect = d3.bisector(function(d) {

@@ -8,7 +8,7 @@ class DonutChart {
         var height = 450;
         var margin = 40;
 
-        // The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
+        // The radius of the pieplot is half the width or half the height (smallest one).
         var radius = Math.min(width, height) / 2 - margin;
 
         // append the svg object to the div called 'pieChart'

@@ -27,6 +27,24 @@ class BarChart {
         let rMinY = 0;
         let rMaxY = heightRange;
 
+        // X axis label:
+        d3.select("#barChart")
+            .append("text")
+            .attr("id", "barChartTitle")
+            .attr("text-anchor", "end")
+            .attr("x", width - 200)
+            .attr("y", height + 20)
+            .text("Player");
+
+        // Y axis label:
+        d3.select("#barChart")
+            .append("text")
+            .attr("text-anchor", "end")
+            .attr("transform", "rotate(-90)")
+            .attr("y", -margin.left + 100)
+            .attr("x", -margin.top - 50)
+            .text("Score");
+
         let yScale = d3
             .scaleLinear()
             .domain([minY, maxY])
